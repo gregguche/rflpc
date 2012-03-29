@@ -281,5 +281,6 @@
 #include "drivers/timer.h"
 #include "drivers/uart.h"
 #include "drivers/dma.h"
+#include "drivers/i2c.h"
 
 #endif
