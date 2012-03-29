@@ -45,7 +45,7 @@ struct uart_pin_conf
 
 typedef struct uart_pin_conf uart_pin_conf_t;
 
-static uart_pin_conf_t _rflpc_uart_config[4] = 
+static const uart_pin_conf_t _rflpc_uart_config[4] = 
   {
     { 
       { RFLPC_UART0_PORT, RFLPC_UART0_TXD_PIN, RFLPC_UART0_RXD_PIN, RFLPC_UART0_PIN_FUNCTION },
@@ -97,7 +97,7 @@ char rflpc_uart_getchar(rflpc_uart_t uart_num)
    UART rate will then be set to 115384
 */
 
-int _rflpc_uart_init(uart_pin_conf_t *uart)
+int _rflpc_uart_init(const uart_pin_conf_t *uart)
 {
    
   /* Set line control values (p. 306) */

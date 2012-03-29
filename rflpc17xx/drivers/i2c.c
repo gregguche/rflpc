@@ -22,6 +22,7 @@
 #include "../nxp/LPC17xx.h"
 #include "../pinconf.h"
 #include "../config.h"
+#include "../clock.h"
 
 typedef struct
 {
@@ -31,13 +32,13 @@ typedef struct
 	unsigned char scl_pin:5;
 	unsigned char pin_function:2;
     }gpio;      
-    uint32_t *pclksel;
+    uint32_t volatile *pclksel;
     unsigned char pclk_bit:5;
     unsigned char pconp_bit:5;
     LPC_I2C_TypeDef *conf_addr;
 } rflpc_i2c_config_t;
 
-static rflpc_i2c_config_t _config[3] = {
+static const rflpc_i2c_config_t _config[3] = {
     { /* I2C0 */
 	{RFLPC_I2C0_PORT, RFLPC_I2C0_SDA_PIN, RFLPC_I2C0_SCL_PIN, RFLPC_I2C0_PIN_FUNC}, /* gpio */
 	&LPC_SC->PCLKSEL0,   	/* PCLKSEL register */
@@ -61,9 +62,32 @@ static rflpc_i2c_config_t _config[3] = {
     },    
 };
 
-void rflpc_i2c_init(rflpc_i2c_port_t port, rflpc_i2c_mode_t mode)
+int rflpc_i2c_init(rflpc_i2c_port_t port)
 {
+    const rflpc_i2c_config_t *i2c = &_config[port];
+    if (rflpc_clock_get_system_clock() != 96000000)
+	return -1;
+    /* Power the port */
+    LPC_SC->PCONP |= (1UL << i2c->pconp_bit);
+    /* Select the desired clock */
+    /* To operate at 100kHz, we set the I2C peripheral clock to 12Mhz,
+     * and then the sum I2CSCLL+I2CSCLH to 120 */
     
+    /* Set peripheral clock to 12 Mhz (96/8) */
+    *(i2c->pclksel) &= ~(RFLPC_CCLK_8 << i2c->pclk_bit);
+    *(i2c->pclksel) |= (RFLPC_CCLK_8 << i2c->pclk_bit);
+
+    /* 60 + 60 = 120 */
+    i2c->conf_addr->I2SCLL = 60;
+    i2c->conf_addr->I2SCLH = 60;
+    
+    /* Select appropriate pins. Documentation says that the pins should configured with neither pull-up nor pull-down and in opendrain */
+    /* SDA */
+    rflpc_pin_set(i2c->gpio.port, i2c->gpio.sda_pin, i2c->gpio.pin_function, RFLPC_PIN_MODE_RESISTOR_NONE, 1);
+    /* SCL */
+    rflpc_pin_set(i2c->gpio.port, i2c->gpio.scl_pin, i2c->gpio.pin_function, RFLPC_PIN_MODE_RESISTOR_NONE, 1);
+    
+    return 0;
 }
 
 #endif

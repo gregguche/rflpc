@@ -45,12 +45,13 @@ typedef enum
 } rflpc_i2c_mode_t;
 
 /** Inits a given I2C port on a given mode.
- * @param port the port to initialize (cf ::rflpc_i2c_port_t)
- * @param mode the mode to use (cd ::rflpc_i2c_mode_t)
+ * @param port the port to initialize (cf ::rflpc_i2c_port_t) 
+ * @return 0 if successful -1 if error (mainly if the board is not running at 96MHz as the SCL calc is hard coded yet...)
+ * @note The port is configured to operate at 100kHz (standard mode). 
  */
-void rflpc_i2c_init(rflpc_i2c_port_t port, rflpc_i2c_mode_t mode);
+int rflpc_i2c_init(rflpc_i2c_port_t port);
 
 /** @} */
 
-#endif /* ENABLE_SPI */
+#endif /* ENABLE_I2C */
 #endif
