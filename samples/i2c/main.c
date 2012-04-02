@@ -23,7 +23,7 @@
 
 void test_i2c()
 {
-    rflpc_i2c_init(RFLPC_I2C_PORT0);
+    rflpc_i2c_init(RFLPC_I2C_PORT0, RFLPC_I2C_MODE_MASTER, 0);
 }
 
 int main()

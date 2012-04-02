@@ -24,6 +24,9 @@
 
 #ifdef RFLPC_CONFIG_ENABLE_I2C
 
+#include <stddef.h> /* size_t */
+#include <stdint.h> /* uint8_t */
+
 /** @addtogroup i2c I2C
  * @ingroup drivers
  * @{
@@ -45,12 +48,29 @@ typedef enum
 } rflpc_i2c_mode_t;
 
 /** Inits a given I2C port on a given mode.
- * @param port the port to initialize (cf ::rflpc_i2c_port_t) 
+ * @param port the port to initialize (cf ::rflpc_i2c_port_t)
+ * @param mode the mode to use (::rflpc_i2c_mode_t)
+ * @param addr if slave mode is requested, the addr of the device. If the least significant bit is set, the device will answer to the general call address (0)
  * @return 0 if successful -1 if error (mainly if the board is not running at 96MHz as the SCL calc is hard coded yet...)
  * @note The port is configured to operate at 100kHz (standard mode). 
  */
-int rflpc_i2c_init(rflpc_i2c_port_t port);
+int rflpc_i2c_init(rflpc_i2c_port_t port, rflpc_i2c_mode_t mode, uint8_t addr);
 
+/** Writes data buffer to i2c.
+ * @param [in] port the port to use
+ * @param [in] addr the i2c address to write to (no effect if set up in slave mode)
+ * @param [in] byte the byte to send
+ * @return -1 if error
+ */
+int rflpc_i2c_write(rflpc_i2c_port_t port, uint8_t addr, uint8_t byte);
+
+/** Reads data buffer from i2c port.
+ * @param [in] port the port to use
+ * @param [in] addr the i2c address to read from (no effect in slave mode)
+ * @param [out] byte pointer to a byte where to store the read data
+ * @return -1 if error
+ */
+int rflpc_i2c_read(rflpc_i2c_port_t port, uint8_t addr, uint8_t *byte);
 /** @} */
 
 #endif /* ENABLE_I2C */

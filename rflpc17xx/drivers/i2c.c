@@ -62,7 +62,7 @@ static const rflpc_i2c_config_t _config[3] = {
     },    
 };
 
-int rflpc_i2c_init(rflpc_i2c_port_t port)
+int rflpc_i2c_init(rflpc_i2c_port_t port, rflpc_i2c_mode_t mode, uint8_t addr)
 {
     const rflpc_i2c_config_t *i2c = &_config[port];
     if (rflpc_clock_get_system_clock() != 96000000)
@@ -87,7 +87,36 @@ int rflpc_i2c_init(rflpc_i2c_port_t port)
     /* SCL */
     rflpc_pin_set(i2c->gpio.port, i2c->gpio.scl_pin, i2c->gpio.pin_function, RFLPC_PIN_MODE_RESISTOR_NONE, 1);
     
+    /* Switch to wanted mode */
+    i2c->conf_addr->I2CONCLR = 0xFFFFFFFF; /* clear all config bits */
+    if (mode == RFLPC_I2C_MODE_MASTER)
+	i2c->conf_addr->I2CONSET = 0x40; /* p. 466, 450 */
+    else
+    {
+	i2c->conf_addr->I2CONSET = 0x44; /* p. 466, 454 */
+	i2c->conf_addr->I2ADR0 = addr;
+	i2c->conf_addr->I2MASK0 = 0;
+    }
     return 0;
 }
+
+
+int rflpc_i2c_write(rflpc_i2c_port_t port, uint8_t addr, uint8_t byte)
+{
+    /** Consider only master yet
+     * @todo handle slave mode */
+    const rflpc_i2c_config_t *i2c = &_config[port];
+    
+    i2c->conf_addr->I2ADR0 = addr;
+    i2c->conf_addr->I2CONSET = 0x20; /* issue a START */
+    
+    return -1;
+}
+
+int rflpc_i2c_read(rflpc_i2c_port_t port, uint8_t addr, uint8_t *data)
+{
+    return -1;
+}
+
 
 #endif
